@@ -84,5 +84,6 @@ client.on('messageCreate', async (message) => {
   }
 
 });
+//token hidden in .env file due to privacy reasons
 const token = process.env.BOT_TOKEN;
 client.login(token);
