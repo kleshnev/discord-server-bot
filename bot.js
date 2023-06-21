@@ -1,5 +1,6 @@
+const fetchGameIcon = require('./fetch.js');
 require('dotenv').config();
-const { Client, GatewayIntentBits } = require('discord.js');
+const { Client, GatewayIntentBits, EmbedBuilder, MessageButton, MessageActionRow } = require('discord.js');
 
 const client = new Client({
   intents: [
@@ -11,23 +12,25 @@ const client = new Client({
 });
 // Event: Bot is ready
 client.on('ready', () => {
+  const tokenAPI = process.env.ICON_API;
   console.log(`Logged in as ${client.user.tag}`);
+  console.log(`API TOK IS ${tokenAPI}`);
   client.channels.fetch('874296978266288170')
-  .then((channel) => {
-    if (channel && channel.type === 'text') {
-      channel.send('Hello from the bot!');
-    }
-  })
-  .catch(console.error);
+    .then((channel) => {
+      if (channel && channel.type === 'text') {
+        channel.send('Hello from the bot!');
+      }
+    })
+    .catch(console.error);
 });
 
 client.on('messageCreate', (message) => {
-  if (message.content === 'ping'){
-      message.reply('Pong!')
+  if (message.content === 'ping') {
+    message.reply('Pong!')
   }
-  });
+});
 // Event: Message received
-client.on('messageCreate', (message) => {
+client.on('messageCreate', async (message) => {
   // Check if the message starts with your bot's command prefix
   console.log(`Received message: ${message.content}`);
   const prefix = '!'; // Change this to your desired command prefix
@@ -45,9 +48,41 @@ client.on('messageCreate', (message) => {
     // Create a poll, store data, and send a response
   }
 
+  if (command === 'gather') {
+    // Check if the user provided the necessary arguments
+    if (args.length !== 2) {
+      message.channel.send('Введите название игры и количество игроков !gather <Название> <Кол-во игроков>');
+      return;
+    }
+
+    const gameName = args[0];
+    const playersCount = parseInt(args[1]);
+
+    // Validate the playersCount argument
+    if (isNaN(playersCount) || playersCount <= 0) {
+      message.channel.send('Введите правильное значение количества игроков');
+      return;
+    }
+
+    const thumbnailUrl = await fetchGameIcon(gameName);
+
+    const exampleEmbed = new EmbedBuilder()
+      .setColor(0x0099FF)
+      .setTitle('Some title')
+      .setThumbnail(thumbnailUrl)
+      .addFields(
+        { name: 'Regular field title', value: 'Some value here' },
+        { name: '\u200B', value: '\u200B' },
+        { name: 'Inline field title', value: 'Some value here', inline: true },
+        { name: 'Inline field title', value: 'Some value here', inline: true },
+      )
+      .addFields({ name: 'Inline field title', value: 'Some value here', inline: true })
+      .setImage('https://i.imgur.com/AfFp7pu.png')
+      .setTimestamp()
+
+    message.channel.send({ embeds: [exampleEmbed] });
+  }
 
 });
-
-// Replace 'YOUR_BOT_TOKEN' with your bot's token
 const token = process.env.BOT_TOKEN;
 client.login(token);
