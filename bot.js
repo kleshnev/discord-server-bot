@@ -5,22 +5,29 @@ const client = new Client({
   intents: [
     GatewayIntentBits.Guilds,
     GatewayIntentBits.GuildMembers,
-    GatewayIntentBits.GuildMessages
+    GatewayIntentBits.GuildMessages,
+    GatewayIntentBits.MessageContent
   ],
 });
 // Event: Bot is ready
 client.on('ready', () => {
   console.log(`Logged in as ${client.user.tag}`);
-  const channel = client.channels.cache.get('874296978266288170');
-
-  // Send a message in the channel
-  if (channel && channel.type === 'text') {
-    channel.send('Hello from the bot!');
-  }
+  client.channels.fetch('874296978266288170')
+  .then((channel) => {
+    if (channel && channel.type === 'text') {
+      channel.send('Hello from the bot!');
+    }
+  })
+  .catch(console.error);
 });
 
+client.on('messageCreate', (message) => {
+  if (message.content === 'ping'){
+      message.reply('Pong!')
+  }
+  });
 // Event: Message received
-client.on('messageCreated', (message) => {
+client.on('messageCreate', (message) => {
   // Check if the message starts with your bot's command prefix
   console.log(`Received message: ${message.content}`);
   const prefix = '!'; // Change this to your desired command prefix
@@ -30,7 +37,6 @@ client.on('messageCreated', (message) => {
   const args = message.content.slice(prefix.length).trim().split(/ +/);
   const command = args.shift().toLowerCase();
   console.log('command is ' + command)
-  message.channel.send('i see command '+ command)
 
   // Handle different commands
   if (command === 'createpoll') {
@@ -39,9 +45,7 @@ client.on('messageCreated', (message) => {
     // Create a poll, store data, and send a response
   }
 
-  if(command === 'test'){
-    message.channel.send('test complete')
-  }
+
 });
 
 // Replace 'YOUR_BOT_TOKEN' with your bot's token
