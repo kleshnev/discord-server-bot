@@ -1,4 +1,9 @@
 const fetchGameIcon = require('./fetch.js');
+const admin = require('firebase-admin');
+const { db } = require('./firebase-admin');
+
+// Access the Firestore database instance
+const firestore = admin.firestore();
 require('dotenv').config();
 const fs = require('node:fs');
 const path = require('node:path');
@@ -29,6 +34,8 @@ for (const folder of commandFolders) {
 		}
 	}
 }
+
+//Database test integration
 
 
 // Event: Bot is ready
@@ -83,10 +90,17 @@ client.on('messageCreate', async (message) => {
   console.log('command is ' + command)
 
   // Handle different commands
-  if (command === 'createpoll') {
-    // Handle the create poll command logic here
-    // Extract poll question and options from args array
-    // Create a poll, store data, and send a response
+  if (command === 'testdb') {
+    firestore.collection('users').add({
+      id: member.id,
+      name: member.nickname,
+    })
+      .then((docRef) => {
+        console.log('Document written with ID:', docRef.id);
+      })
+      .catch((error) => {
+        console.error('Error adding document:', error);
+      });
   }
 
   if (command === 'gather') {
