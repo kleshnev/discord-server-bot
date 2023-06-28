@@ -83,7 +83,8 @@ client.on('messageCreate', async (message) => {
   if (!message.content.startsWith(prefix) || message.author.bot) return;
   
   let member = message.member;
-  let nickname = member.displayName;
+  let nickName = member.displayName;
+  const username = message.author.username;
   // Split the message content into command and arguments
   const args = message.content.slice(prefix.length).trim().split(/ +/);
   const command = args.shift().toLowerCase();
@@ -93,7 +94,7 @@ client.on('messageCreate', async (message) => {
   if (command === 'testdb') {
     firestore.collection('users').add({
       id: member.id,
-      name: member.nickname,
+      name: username,
     })
       .then((docRef) => {
         console.log('Document written with ID:', docRef.id);
@@ -127,7 +128,7 @@ client.on('messageCreate', async (message) => {
       .addFields(
         { name: 'Требуется игроков:', value: `${playersCount}` },
         { name: '\u200B', value: '\u200B' },
-        { name: 'Создано пользователем', value: `${nickname}`, inline: true }
+        { name: 'Создано пользователем', value: `${nickName}`, inline: true }
       )
       .addFields(
         {name: ``,value}

@@ -5,3 +5,7 @@ admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
   databaseURL: 'https://discord-bot-dean.europe-west3.firebasedatabase.app'
 }); 
+
+const firestore = admin.firestore();
+
+module.exports = { admin, firestore };
