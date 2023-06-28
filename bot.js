@@ -7,13 +7,14 @@ const firestore = admin.firestore();
 require('dotenv').config();
 const fs = require('node:fs');
 const path = require('node:path');
-const { Client, GatewayIntentBits, EmbedBuilder, Collection, Events} = require('discord.js');
+const { Client, GatewayIntentBits, EmbedBuilder, Collection, Events,Partials} = require('discord.js');
 const client = new Client({
   intents: [
     GatewayIntentBits.Guilds,
     GatewayIntentBits.GuildMembers,
     GatewayIntentBits.GuildMessages,
-    GatewayIntentBits.MessageContent
+    GatewayIntentBits.MessageContent,
+    GatewayIntentBits.GuildPresences
   ],
 });
 client.commands = new Collection();
@@ -35,6 +36,7 @@ for (const folder of commandFolders) {
 	}
 }
 
+
 //Database test integration
 
 
@@ -43,13 +45,9 @@ client.on('ready', () => {
   const tokenAPI = process.env.ICON_API;
   console.log(`Logged in as ${client.user.tag}`);
   console.log(`API TOK IS ${tokenAPI}`);
-  client.channels.fetch('874296978266288170')
-    .then((channel) => {
-      if (channel && channel.type === 'text') {
-        channel.send('Hello from the bot!');
-      }
-    })
-    .catch(console.error);
+  const guildIds = client.guilds.cache.map((guild) => guild.id);
+
+  console.log('Guild IDs:', guildIds);
 });
 
 client.on(Events.InteractionCreate, async interaction => {

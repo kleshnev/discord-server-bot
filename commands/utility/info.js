@@ -11,7 +11,6 @@ module.exports = {
 				.setRequired(true)),
 	async execute(interaction) {
 		const userQuery = firestore.collection('users').where('name', '==', interaction.user.username).limit(1);
-		let userData
 		userQuery.get()
 			.then(async snapshot => {
 				if (!snapshot.empty) {
