@@ -1,7 +1,7 @@
 const Jimp = require('jimp');
 const path = require('path');
 
-const catImagePath = path.join(__dirname, '..', 'source', 'images', 'votemute-images', 'raw', 'cat.png');
+const catImagePath = path.join(__dirname, '..', 'source', 'images', 'votemute-images', 'raw', 'userAvatar.png');
 const barsImagePath = path.join(__dirname, '..', 'source', 'images', 'votemute-images', 'raw', 'bars.png');
 const outputPath = path.join(__dirname, '..', 'source', 'images', 'votemute-images', 'done', 'done.png');
 

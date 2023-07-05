@@ -1,12 +1,18 @@
 class VoteDisplay {
-
     constructor(usersCount, votesYes, votesNo) {
         this.usersCount = usersCount;
         this.votesYes = votesYes;
         this.votesNo = votesNo;
         this.votesCount = votesYes + votesNo;
-        this.yesPercentage = 100 * (votesYes / this.votesCount)
-        this.noPercentage = 100 * (votesNo / this.votesCount)
+        if (votesNo + votesYes != 0) {
+            this.yesPercentage = 100 * (votesYes / this.votesCount)
+            this.noPercentage = 100 * (votesNo / this.votesCount)
+        } else {
+            this.yesPercentage = 0;
+            this.noPercentage = 0;
+        }
+
+        this.bars = [' ', ' '];
     }
 
     getVisualBar(votesPercentage) {
@@ -21,11 +27,10 @@ class VoteDisplay {
     }
 
 
-    getVoteDisplay(barsCount) {
-        const bars = ['',''];
-        bars[0] = this.getVisualBar(this.yesPercentage)
-        bars[1] = this.getVisualBar(this.noPercentage)
-        return bars;
+
+    getVoteDisplay() {
+        this.bars[0] = this.getVisualBar(this.yesPercentage)
+        this.bars[1] = this.getVisualBar(this.noPercentage)
     }
 }
 
