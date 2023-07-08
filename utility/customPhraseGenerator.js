@@ -25,12 +25,14 @@ const muteDenyPhrases = [
     "Против заглушения **USER** проголосовали большинством голосов 'НЕТ'. Давайте позволим ему продолжать развлекать нас своими шутками!"
 ];
 
+
 function getRandomMessage(messageType, username) {
     const phrases = getPhrasesForUser(messageType);
     const randomIndex = Math.floor(Math.random() * phrases.length);
     const templateString = phrases[randomIndex];
     return templateString.replace('USER', username);
 }
+
 
 function getPhrasesForUser(messageType) {
     if (messageType === 'accept') {
