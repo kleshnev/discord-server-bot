@@ -60,9 +60,11 @@ module.exports = {
 
         const guild = interaction.guild;
         const targetUser = interaction.options.getMember('targetuser');
+        console.log(`checking nickname - ` +targetUser.nickname) 
+        console.log(`checking nickname - ` +targetUser)
         const muteReason = interaction.options.getString('reason') ?? 'Без причины';
         console.log('targetUser ' + targetUser)
-        const targetUserName = targetUser.nickname;
+        const targetUserName = targetUser.nickname == null ? targetUser.user.username : targetUser.nickname;
         const votingMessage = customPhraseGenerator.getRandomMessage('vote', targetUserName)
         const avatarUrl = targetUser.displayAvatarURL({ dynamic: true });
         const votingEmbed = new EmbedBuilder()
@@ -79,11 +81,11 @@ module.exports = {
         const row = new ActionRowBuilder()
             .addComponents(
                 new ButtonBuilder()
-                    .setLabel('Заглушить')
+                    .setLabel('Заглушить 🔇')
                     .setStyle(ButtonStyle.Primary)
                     .setCustomId('buttonYes'),
                 new ButtonBuilder()
-                    .setLabel('Пощадить')
+                    .setLabel('Пощадить 😇')
                     .setStyle(ButtonStyle.Secondary)
                     .setCustomId('buttonNo'));
 
@@ -224,6 +226,7 @@ module.exports = {
             // Fetch the avatar data and save it to a file
             const response = await fetch(avatarUrl);
             const buffer = await response.buffer();
+            row.components.forEach(button => button.setDisabled(true));
 
             // Save the avatar as a file
             fs.writeFileSync(path.join(__dirname, '..', '..', 'source', 'images', 'votemute-images', 'raw', 'userAvatar.png'), buffer);
@@ -235,15 +238,15 @@ module.exports = {
                 const attachment = new AttachmentBuilder(path.join(__dirname, '..', '..', 'source', 'images', 'votemute-images', 'done', 'done.png'), { name: 'done.png' })
 
                 const updatedEmbed = new EmbedBuilder()
-                    .setTitle(`**${targetUserName}** ВИНОВЕН`)
-                    .setDescription(votingMessage)
+                    .setTitle(`**${targetUserName}** :scales: ВИНОВЕН :scales: `)
+                    .setDescription(customPhraseGenerator.getRandomMessage('accept', targetUserName))
                     .setColor('#ff0000')
                     .addFields(
                         { name: 'Причина:', value: `__*${muteReason}*__` },
                     )
                     .setImage('attachment://done.png');
 
-                await interaction.editReply({ embeds: [updatedEmbed], files: [attachment] });
+                await interaction.editReply({ embeds: [updatedEmbed], components: [row], files: [attachment] });
                 targetUser.voice.setMute(true);
 
                 const duration = 5000;
@@ -253,7 +256,17 @@ module.exports = {
                 }, duration);
 
             } else {
-                await interaction.followUp(`За ${votes.yes}\t Против: ${votes.no}\n` + customPhraseGenerator.getRandomMessage('deny', targetUserName));
+                const updatedEmbed = new EmbedBuilder()
+                    .setTitle(`**${targetUserName}** :face_holding_back_tears:  НЕ ВИНОВЕН :face_holding_back_tears:  `)
+                    .setDescription(customPhraseGenerator.getRandomMessage('deny', targetUserName))
+                    .setColor('#ff0000')
+                    .addFields(
+                        { name: `За: **${votes.yes}** (${currentVoteDisplay.yesPercentage}%)`, value: `${usersVotedYesNow}\n${currentVoteDisplay.bars[0]}` },
+                        { name: `Против: **${votes.no}** (${currentVoteDisplay.noPercentage}%)`, value: `${usersVotedNoNow}\n${currentVoteDisplay.bars[1]}` }
+                    )
+                    .setImage(avatarUrl);
+
+                await interaction.editReply({ embeds: [updatedEmbed], components: [row] });
             }
         });
     },
