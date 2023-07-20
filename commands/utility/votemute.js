@@ -60,8 +60,8 @@ module.exports = {
 
         const guild = interaction.guild;
         const targetUser = interaction.options.getMember('targetuser');
-        console.log(`checking nickname - ` +targetUser.nickname) 
-        console.log(`checking nickname - ` +targetUser)
+        console.log(`checking nickname - ` + targetUser.nickname)
+        console.log(`checking nickname - ` + targetUser)
         const muteReason = interaction.options.getString('reason') ?? 'Без причины';
         console.log('targetUser ' + targetUser)
         const targetUserName = targetUser.nickname == null ? targetUser.user.username : targetUser.nickname;
@@ -254,7 +254,6 @@ module.exports = {
                 setTimeout(() => {
                     targetUser.voice.setMute(false);
                 }, duration);
-
             } else {
                 const updatedEmbed = new EmbedBuilder()
                     .setTitle(`**${targetUserName}** :face_holding_back_tears:  НЕ ВИНОВЕН :face_holding_back_tears:  `)

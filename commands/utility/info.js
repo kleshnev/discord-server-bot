@@ -10,7 +10,7 @@ module.exports = {
 				.setDescription('Имя пользователя')
 				.setRequired(true)),
 	async execute(interaction) {
-		const userQuery = firestore.collection('users').where('name', '==', interaction.user.username).limit(1);
+		const userQuery = firestore.collection('users').where('name', '==', interaction.options.getString('user')).limit(1);
 		userQuery.get()
 			.then(async snapshot => {
 				if (!snapshot.empty) {

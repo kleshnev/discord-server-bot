@@ -1,17 +1,25 @@
 const Jimp = require('jimp');
 const path = require('path');
+const sharp = require('sharp');
 
 const catImagePath = path.join(__dirname, '..', 'source', 'images', 'votemute-images', 'raw', 'userAvatar.png');
 const barsImagePath = path.join(__dirname, '..', 'source', 'images', 'votemute-images', 'raw', 'bars.png');
 const outputPath = path.join(__dirname, '..', 'source', 'images', 'votemute-images', 'done', 'done.png');
 
 async function mergeImages() {
-    console.log('TESTTT!' + catImagePath,barsImagePath,outputPath)
   try {
-    const catImage = await Jimp.read(catImagePath);
+    await sharp(catImagePath).toFormat('png').toFile(path.join(__dirname, '..', 'source', 'images', 'votemute-images', 'raw', 'userAvatar2.png'));
+    console.log('Image converted successfully.');
+  } catch (error) {
+    console.error('Error converting image:', error);
+  }
+  console.log('TESTTT!' + catImagePath, barsImagePath, outputPath)
+  try {
+    const fixedImage = path.join(__dirname, '..', 'source', 'images', 'votemute-images', 'raw', 'userAvatar2.png')
+    const catImage = await Jimp.read(fixedImage);
     const barsImage = await Jimp.read(barsImagePath);
 
-    console.log('DONE!' + catImagePath,barsImagePath,outputPath)
+    console.log('DONE!' + fixedImage, barsImagePath, outputPath)
     barsImage.resize(catImage.getWidth(), catImage.getHeight());
 
     catImage.composite(barsImage, 0, 0);
@@ -25,5 +33,5 @@ async function mergeImages() {
 }
 
 module.exports = {
-    mergeImages
+  mergeImages
 };
