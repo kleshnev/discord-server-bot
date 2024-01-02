@@ -1,13 +1,8 @@
-const fetchGameIcon = require('./fetch.js');
-const admin = require('firebase-admin');
-const { db } = require('./firebase-admin');
-
-// Access the Firestore database instance
-const firestore = admin.firestore();
 require('dotenv').config();
 const fs = require('node:fs');
 const path = require('node:path');
-const { Client, GatewayIntentBits, EmbedBuilder, Collection, Events, Partials } = require('discord.js');
+const { addMessageToDb, addNicknameToDb , saveVoiceChatJoin ,saveVoiceChatLeave } = require('./utility/dbService.js')
+const { Client, GatewayIntentBits, Collection, Events } = require('discord.js');
 const client = new Client({
   intents: [
     GatewayIntentBits.Guilds,
@@ -38,32 +33,6 @@ for (const folder of commandFolders) {
   }
 }
 
-const addMessageToDb = async (id, content) => {
-  const date = new Date()
-  console.log(`imitating db message add ID: ${id} / Content: ${content} / Date ${date} `)
-  try {
-    const usersCollection = firestore.collection('users');
-    // Create a new document with id and name fields
-    const userDoc = usersCollection.doc(id);
-    // Get the Messages subcollection for the user
-    const messagesCollection = userDoc.collection('Messages');
-
-    // Create message data
-    const messageData = {
-      content: content,
-      timestamp: new Date()
-    };
-
-    // Create a new message document in the Messages subcollection
-    const messageDoc = messagesCollection.doc();
-    await messageDoc.set(messageData);
-    console.log('Message added successfully!');
-  } catch (error) {
-    console.error('Error addind message:', error);
-  }
-};
-
-// Event: Bot is ready
 client.on('ready', () => {
   const tokenAPI = process.env.ICON_API;
   console.log(`Logged in as ${client.user.tag}`);
@@ -95,6 +64,12 @@ client.on(Events.InteractionCreate, async interaction => {
   }
 });
 
+client.on('guildMemberUpdate', async (oldMember, newMember) => {
+  if (oldMember.displayName !== newMember.displayName) {
+    const result = await addNicknameToDb(newMember.id, oldMember.displayName, newMember.displayName);
+    console.log(result);
+  }
+});
 
 // Event: Message received
 client.on('messageCreate', async (message) => {
@@ -102,61 +77,37 @@ client.on('messageCreate', async (message) => {
   console.log(`Received message: ${message.content}`);
   // Ignore bot messages
   if (message.author.bot) return;
-
+  const mentionedMembers = message.mentions.members; // Get a collection of mentioned members
+  let mentionUserNames = []; // Create an empty array
+  if (mentionedMembers.size > 0) {
+    for (const mentionedMember of mentionedMembers.values()) {
+      mentionUserNames.push(mentionedMember.user.username);
+    }
+  }
   let member = message.member;
-  let nickName = member.displayName;
-  const username = message.author.username;
-  console.log('I see message ' + message.content)
-  addMessageToDb(message.author.id,message.content);
-  // // Handle different commands
-  // if (command === 'testdb') {
-  //   firestore.collection('users').add({
-  //     id: member.id,
-  //     name: username,
-  //   })
-  //     .then((docRef) => {
-  //       console.log('Document written with ID:', docRef.id);
-  //     })
-  //     .catch((error) => {
-  //       console.error('Error adding document:', error);
-  //     });
-  // }
+  const result = await addMessageToDb(member.id, message.content, mentionUserNames);
+  console.log(result);
+});
 
-  // if (command === 'gather') {
-  //   // Check if the user provided the necessary arguments
-  //   if (args.length !== 2) {
-  //     message.channel.send('Введите название игры и количество игроков !gather <Название> <Кол-во игроков>');
-  //     return;
-  //   }
-
-  //   const gameName = args[0];
-  //   const playersCount = parseInt(args[1]);
-
-  //   // Validate the playersCount argument
-  //   if (isNaN(playersCount) || playersCount <= 0) {
-  //     message.channel.send('Введите правильное значение количества игроков');
-  //     return;
-  //   }
-
-  //   //const image = await fetchGameIcon(gameName);
-  //   const image = `https://i.imgur.com/d6KibHs.jpg`; 
-  //   const partyEmbed = new EmbedBuilder()
-  //     .setColor(0x0099FF)
-  //     .setTitle(`Собираем пати в игру ${gameName}!`)
-  //     .addFields(
-  //       { name: 'Требуется игроков:', value: `${playersCount}` },
-  //       { name: '\u200B', value: '\u200B' },
-  //       { name: 'Создано пользователем', value: `${nickName}`, inline: true }
-  //     )
-  //     .addFields(
-  //       {name: ``,value}
-  //     )
-  //     .setImage(image)
-  //     .setTimestamp()
-
-  //   message.channel.send({ embeds: [partyEmbed] });
-  // }
-
+client.on('voiceStateUpdate', (oldState, newState) => {
+  if (oldState.channelId !== newState.channelId) {
+    if (newState.channel) {
+      console.log(`${newState.member.user.tag} joined ${newState.channel.name}`);
+      saveVoiceChatJoin(newState.member.user.id, newState.guild.id);
+    } else {
+      saveVoiceChatLeave(newState.member.user.id, oldState.guild.id);
+      console.log(`${oldState.member.user.tag} left ${oldState.channel.name}`);
+    }
+    if (oldState.mute !== newState.mute) {
+      if (newState.mute) {
+        console.log(`${newState.member.user.tag} was muted in ${newState.channel.name}`);
+        // Handle mute action
+      } else {
+        console.log(`${newState.member.user.tag} was unmuted in ${newState.channel.name}`);
+        // Handle unmute action
+      }
+    }
+  }
 });
 //token hidden in .env file due to privacy reasons
 const token = process.env.BOT_TOKEN;
